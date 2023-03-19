@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Monitory SNS Cloud Formation Template"
+
+Resources: 
+  BtgMonitoryTopic: 
+    Type: AWS::SNS:Topic
+    Properties:
+      DisplayName: "btg-monitory-sns"
+      TopicName: "btg-monitory-sns"

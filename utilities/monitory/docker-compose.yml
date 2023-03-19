@@ -1,0 +1,14 @@
+version: '3'
+services:
+  localstack: 
+    image: localstack/localstack:0.11.3
+    container_name: localstack
+    ports:
+      - 4566:4566
+    networks:
+      - monitory-network
+
+networks:
+  monitory-network:
+    driver: bridge
+    name: monitory-network
