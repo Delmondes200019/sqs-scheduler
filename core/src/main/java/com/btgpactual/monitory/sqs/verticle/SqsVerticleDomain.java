@@ -1,8 +1,13 @@
 package com.btgpactual.monitory.sqs.verticle;
+
+import com.btgpactual.monitory.sqs.deserializer.sns.EventMessageDeserializer;
+
 public class SqsVerticleDomain {
 
-    private String queueName;
-    private String eventBusConsumer;
+    private final String queueName;
+    private final String eventBusConsumer;
+
+    private EventMessageDeserializer eventMessageDeserializer;
 
     public SqsVerticleDomain(String queueName, String eventBusConsumer){
         this.eventBusConsumer = eventBusConsumer;
@@ -15,5 +20,13 @@ public class SqsVerticleDomain {
 
     public String getQueueName() {
         return queueName;
+    }
+
+    public void setEventMessageDeserializer(EventMessageDeserializer eventMessageDeserializer) {
+        this.eventMessageDeserializer = eventMessageDeserializer;
+    }
+
+    public EventMessageDeserializer getEventMessageDeserializer() {
+        return eventMessageDeserializer;
     }
 }

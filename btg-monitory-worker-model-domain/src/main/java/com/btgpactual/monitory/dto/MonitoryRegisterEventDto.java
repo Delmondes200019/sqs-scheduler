@@ -8,7 +8,17 @@ public class MonitoryRegisterEventDto {
     private String umbrellaCode;
     private String identifierCode;
 
-    private Set<MonitoryRequeterDto> requesters;
+    private Long period;
+
+    public void setPeriod(Long period) {
+        this.period = period;
+    }
+
+    public Long getPeriod() {
+        return period;
+    }
+
+    private Set<MonitoryRequesterDto> requesters;
 
     public void setIdentifierCode(String identifierCode) {
         this.identifierCode = identifierCode;
@@ -34,11 +44,11 @@ public class MonitoryRegisterEventDto {
         return umbrellaCode;
     }
 
-    public void setRequesters(Set<MonitoryRequeterDto> requesters) {
+    public void setRequesters(Set<MonitoryRequesterDto> requesters) {
         this.requesters = requesters;
     }
 
-    public Set<MonitoryRequeterDto> getRequesters() {
+    public Set<MonitoryRequesterDto> getRequesters() {
         return requesters;
     }
 
@@ -51,4 +61,5 @@ public class MonitoryRegisterEventDto {
                 ", requesters=" + requesters +
                 '}';
     }
+
 }

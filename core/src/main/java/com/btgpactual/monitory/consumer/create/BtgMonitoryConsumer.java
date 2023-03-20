@@ -1,7 +1,9 @@
-package com.btgpactual.monitory.consumer;
+package com.btgpactual.monitory.consumer.create;
 
 import com.btgpactual.monitory.dto.MonitoryRegisterEventDto;
-import com.btgpactual.monitory.dto.MonitoryRequeterDto;
+import com.btgpactual.monitory.dto.MonitoryRequesterDto;
+import com.btgpactual.monitory.enums.MonitoryStatus;
+import com.btgpactual.monitory.ttl.MonitoryStepFunctionTtl;
 import io.quarkus.vertx.ConsumeEvent;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -16,8 +18,11 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @ApplicationScoped
 public class BtgMonitoryConsumer {
@@ -31,10 +36,10 @@ public class BtgMonitoryConsumer {
     @Inject
     DynamoDbAsyncClient dynamoDbAsyncClient;
 
-    private static final Log logger = LogFactory.getLog(BtgMonitoryConsumer.class);
+    @Inject
+    MonitoryStepFunctionTtl monitoryStepFunctionTtl;
 
-//pk    TENANT_ID#UMBRELACODE#IDENTIFIERCODE TENANT_ID#UMBRELACODE#IDENTIFIERCODE
-//sk    TENANT_ID#UMBRELACODE#IDENTIFIERCODE SOURCE_SYSTEM#DADOS_CADASTRAIS
+    private static final Log logger = LogFactory.getLog(BtgMonitoryConsumer.class);
 
     @ConsumeEvent(CONSUMER_ALIAS)
     public Uni<Void> consume(JsonObject message) {
@@ -43,6 +48,12 @@ public class BtgMonitoryConsumer {
                 .invoke(monitoryRegisterEventDto -> logger.info("Received ".concat(monitoryRegisterEventDto.toString())))
                 .call(this::persistPrincipal)
                 .call(this::persistRequesters)
+                .call(monitoryRegisterEventDto -> monitoryStepFunctionTtl.generateTtl(monitoryRegisterEventDto)
+                        .call(monitoryRequesterDto -> mapToRequesterEntity(monitoryRegisterEventDto, monitoryRequesterDto)
+                                .chain(stringAttributeValueMap -> persistEntity(stringAttributeValueMap)))
+                        .collect()
+                        .last()
+                        .replaceWithVoid())
                 .replaceWithVoid();
     }
 
@@ -51,7 +62,7 @@ public class BtgMonitoryConsumer {
                 .chain(stringAttributeValueMap -> persistEntity(stringAttributeValueMap));
     }
 
-    private Uni<MonitoryRequeterDto> persistRequesters(MonitoryRegisterEventDto monitoryRegisterEventDto) {
+    private Uni<MonitoryRequesterDto> persistRequesters(MonitoryRegisterEventDto monitoryRegisterEventDto) {
         return Multi.createFrom().iterable(monitoryRegisterEventDto.getRequesters())
                 .onItem()
                 .call(monitoryRequesterDto -> mapToRequesterEntity(monitoryRegisterEventDto, monitoryRequesterDto)
@@ -60,22 +71,26 @@ public class BtgMonitoryConsumer {
                 .last();
     }
 
-    private Uni<Map<String, AttributeValue>> mapToRequesterEntity(MonitoryRegisterEventDto monitoryRegisterEventDto,
-                                                                  MonitoryRequeterDto monitoryRequeterDto) {
-
+    private Uni<Map<String, AttributeValue>> mapToRequesterEntity(MonitoryRegisterEventDto monitoryRegisterEventDto, MonitoryRequesterDto monitoryRequesterDto) {
         Map<String, AttributeValue> monitoryRequesterEntity = new HashMap<>();
 
         monitoryRequesterEntity.put("pk", AttributeValue.builder()
                 .s(buildPk(monitoryRegisterEventDto))
                 .build());
         monitoryRequesterEntity.put("sk", AttributeValue.builder()
-                .s(buildSk(monitoryRequeterDto))
+                .s(buildSk(monitoryRequesterDto))
                 .build());
+
+        Optional.ofNullable(monitoryRequesterDto.getLastExecutionArn()).ifPresent(lasExecutionArn -> {
+            monitoryRequesterEntity.put("lastExecutionArn", AttributeValue.builder()
+                    .s(monitoryRequesterDto.getLastExecutionArn())
+                    .build());
+        });
 
         return Uni.createFrom().item(monitoryRequesterEntity);
     }
 
-    private String buildSk(MonitoryRequeterDto monitoryRequeterDto) {
+    private String buildSk(MonitoryRequesterDto monitoryRequeterDto) {
         return "SOURCESYSTEM"
                 .concat("#")
                 .concat(monitoryRequeterDto.getSourceSystem());
@@ -98,6 +113,15 @@ public class BtgMonitoryConsumer {
         monitoryEntity.put("sk", AttributeValue.builder()
                 .s(buildPk(monitoryRegisterEventDto))
                 .build());
+        monitoryEntity.put("period", AttributeValue.builder()
+                .n(monitoryRegisterEventDto.getPeriod().toString())
+                .build());
+        monitoryEntity.put("status", AttributeValue.builder()
+                .s(MonitoryStatus.OK.description)
+                .build());
+        monitoryEntity.put("lastUpdateDate", AttributeValue.builder()
+                .s(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now()))
+                .build());
 
         return Uni.createFrom().item(monitoryEntity);
     }
@@ -109,5 +133,6 @@ public class BtgMonitoryConsumer {
                 .concat("#")
                 .concat(monitoryRequestDto.getIdentifierCode());
     }
+
 
 }

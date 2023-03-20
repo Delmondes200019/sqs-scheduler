@@ -5,7 +5,7 @@ import io.vertx.core.json.JsonObject;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class SNSMessageDeserialzer {
+public class SNSMessageDeserialzer implements EventMessageDeserializer {
 
     public JsonObject deserialize(String message){
 

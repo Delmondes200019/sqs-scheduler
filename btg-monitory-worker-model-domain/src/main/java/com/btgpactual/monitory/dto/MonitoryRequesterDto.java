@@ -1,8 +1,10 @@
 package com.btgpactual.monitory.dto;
 
-public class MonitoryRequeterDto {
+public class MonitoryRequesterDto {
 
     private String sourceSystem;
+
+    private String lastExecutionArn;
 
     public String getSourceSystem() {
         return sourceSystem;
@@ -12,10 +14,19 @@ public class MonitoryRequeterDto {
         this.sourceSystem = sourceSystem;
     }
 
+    public void setLastExecutionArn(String lastExecutionArn) {
+        this.lastExecutionArn = lastExecutionArn;
+    }
+
+    public String getLastExecutionArn() {
+        return lastExecutionArn;
+    }
+
     @Override
     public String toString() {
         return "MonitoryRequeterDto{" +
                 "sourceSystem='" + sourceSystem + '\'' +
                 '}';
     }
+
 }

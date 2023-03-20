@@ -1,13 +1,13 @@
 package com.btgpactual.monitory.sqs.scheduler;
 
-import com.btgpactual.monitory.sqs.deserializer.sns.SNSMessageDeserialzer;
+import com.btgpactual.monitory.sqs.deserializer.sns.DefaultEventMessageDeserializer;
+import com.btgpactual.monitory.sqs.deserializer.sns.EventMessageDeserializer;
 import com.btgpactual.monitory.sqs.verticle.SqsVerticle;
 import com.btgpactual.monitory.sqs.verticle.SqsVerticleDomain;
 import io.quarkus.arc.All;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,11 +16,12 @@ import software.amazon.awssdk.services.sqs.model.*;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 public class SQSMessageScheduler {
 
     private static final String QUEUE_NAME = "btg-monitory";
-    private static final String SCHEDULE_EXECUTION_TIME = "20s";
+    private static final String SCHEDULE_EXECUTION_TIME = "10s";
 
     private static final Log logger = LogFactory.getLog(SQSMessageScheduler.class);
 
@@ -34,15 +35,11 @@ public class SQSMessageScheduler {
     @Inject
     List<SqsVerticle> sqsVerticles;
 
-    @Inject
-    SNSMessageDeserialzer snsMessageDeserialzer;
-
     @Scheduled(every = SCHEDULE_EXECUTION_TIME, skipExecutionIf = SqsSkiptPredicate.class)
     Uni<Void> execute() {
         return Multi.createFrom()
                 .iterable(sqsVerticles)
                 .map(SqsVerticle::sqsVerticleDomain)
-                .invoke(sqsVerticleDomain -> logger.info("Looking for messages at ".concat(sqsVerticleDomain.getQueueName())))
                 .call(sqsVerticleDomain -> processQueueMessage(sqsVerticleDomain))
                 .collect()
                 .last()
@@ -83,13 +80,15 @@ public class SQSMessageScheduler {
                         .queueUrl(getQueueUrlResponse.queueUrl())
                         .receiptHandle(message.receiptHandle())
                         .build()))
-                .invoke(deleteMessageResponse -> logger.info("Message acknowledged"))
                 .onFailure()
                 .invoke(throwable -> logger.error("Fail to delete message. ".concat(throwable.getMessage())));
     }
 
     private Uni<io.vertx.mutiny.core.eventbus.Message<Object>> sendEventBusRequest(SqsVerticleDomain sqsVerticleDomain, Message message) {
-        return eventBus.request(sqsVerticleDomain.getEventBusConsumer(), snsMessageDeserialzer.deserialize(message.body()))
+        EventMessageDeserializer eventMessageDeserializer = Optional.ofNullable(sqsVerticleDomain.getEventMessageDeserializer())
+                .orElse(new DefaultEventMessageDeserializer());
+
+        return eventBus.request(sqsVerticleDomain.getEventBusConsumer(), eventMessageDeserializer.deserialize(message.body()))
                 .onFailure()
                 .invoke(throwable -> logger.error("Error processing Queue message. ".concat(throwable.getMessage())));
     }
