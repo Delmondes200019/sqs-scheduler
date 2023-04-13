@@ -1,4 +1,4 @@
-package com.btgpactual.monitory.sqs.deserializer.sns;
+package com.sqsscheduler.sqs.deserializer.sns;
 
 import io.vertx.core.json.JsonObject;
 

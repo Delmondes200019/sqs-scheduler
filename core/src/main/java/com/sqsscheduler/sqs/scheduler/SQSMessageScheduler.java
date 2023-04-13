@@ -1,9 +1,9 @@
-package com.btgpactual.monitory.sqs.scheduler;
+package com.sqsscheduler.sqs.scheduler;
 
-import com.btgpactual.monitory.sqs.deserializer.sns.DefaultEventMessageDeserializer;
-import com.btgpactual.monitory.sqs.deserializer.sns.EventMessageDeserializer;
-import com.btgpactual.monitory.sqs.verticle.SqsVerticle;
-import com.btgpactual.monitory.sqs.verticle.SqsVerticleDomain;
+import com.sqsscheduler.sqs.deserializer.sns.DefaultEventMessageDeserializer;
+import com.sqsscheduler.sqs.deserializer.sns.EventMessageDeserializer;
+import com.sqsscheduler.sqs.verticle.SqsVerticle;
+import com.sqsscheduler.sqs.verticle.SqsVerticleDomain;
 import io.quarkus.arc.All;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Multi;

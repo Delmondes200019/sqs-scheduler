@@ -1,6 +1,6 @@
-package com.btgpactual.monitory.sqs.verticle;
+package com.sqsscheduler.sqs.verticle;
 
-import com.btgpactual.monitory.sqs.deserializer.sns.EventMessageDeserializer;
+import com.sqsscheduler.sqs.deserializer.sns.EventMessageDeserializer;
 
 public class SqsVerticleDomain {
 

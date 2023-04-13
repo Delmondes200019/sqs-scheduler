@@ -1,4 +1,4 @@
-package com.btgpactual.monitory.sqs.verticle;
+package com.sqsscheduler.sqs.verticle;
 
 public interface SqsVerticle {
 

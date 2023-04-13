@@ -1,6 +1,6 @@
-package com.btgpactual.monitory.sqs.scheduler;
+package com.sqsscheduler.sqs.scheduler;
 
-import com.btgpactual.monitory.sqs.verticle.SqsVerticle;
+import com.sqsscheduler.sqs.verticle.SqsVerticle;
 import io.quarkus.arc.All;
 import io.quarkus.scheduler.Scheduled;
 import io.quarkus.scheduler.ScheduledExecution;
