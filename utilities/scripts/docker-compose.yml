@@ -9,6 +9,6 @@ services:
       - simple-network
 
 networks:
-  monitory-network:
+  simple-network:
     driver: bridge
     name: simple-network
