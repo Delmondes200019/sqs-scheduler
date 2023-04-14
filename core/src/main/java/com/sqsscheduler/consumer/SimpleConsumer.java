@@ -18,6 +18,6 @@ public class SimpleConsumer {
     @ConsumeEvent(CONSUMER_ALIAS)
     public Uni<Void> consumeEvent(JsonObject eventMessage){
         return Uni.createFrom().voidItem()
-                .invoke(() -> LOG.info("Received event"));
+                .invoke(() -> LOG.info("Received event ".concat(eventMessage.toString())));
     }
 }
