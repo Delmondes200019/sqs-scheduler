@@ -20,8 +20,8 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <dependencies>
 
+  <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-vertx</artifactId>
@@ -46,13 +46,9 @@
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>netty-nio-client</artifactId>
     </dependency>
-
-<!--    Tests-->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-logging-json</artifactId>
     </dependency>
   </dependencies>
 </project>
