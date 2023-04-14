@@ -6,9 +6,9 @@ services:
     ports:
       - 4566:4566
     networks:
-      - monitory-network
+      - simple-network
 
 networks:
   monitory-network:
     driver: bridge
-    name: monitory-network
+    name: simple-network
